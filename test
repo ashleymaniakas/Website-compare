@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Comparison</title>
+  <style>
+    .difference-box {
+      background-color: #d4f9d4; /* Light green box */
+      padding: 5px;
+      border: 2px solid green;
+      margin: 5px;
+    }
+    .content {
+      margin: 20px;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="website1" class="content">
+    <h2>Website 1 Content:</h2>
+    <p>Loading...</p>
+  </div>
+  
+  <div id="website2" class="content">
+    <h2>Website 2 Content:</h2>
+    <p>Loading...</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/diff-match-patch/1.0.4/diff.min.js"></script>
+  <script>
+    async function fetchWebsiteContent(url) {
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        return text;
+      } catch (error) {
+        console.error("Failed to fetch website content:", error);
+        return '';
+      }
+    }
+
+    function highlightDifferences(originalText, modifiedText) {
+      const dmp = new diff_match_patch();
+      const diffs = dmp.diff_main(originalText, modifiedText);
+      dmp.diff_cleanupSemantic(diffs);
+      
+      let resultHTML = '';
+      diffs.forEach(([type, text]) => {
+        if (type === 0) {
+          resultHTML += text; // No difference
+        } else if (type === 1) {
+          resultHTML += `<span class="difference-box">${text}</span>`; // Text added in modified content
+        } else if (type === -1) {
+          resultHTML += `<span class="difference-box">${text}</span>`; // Text removed in modified content
+        }
+      });
+
+      return resultHTML;
+    }
+
+    async function compareWebsites() {
+      const url1 = 'https://example.com'; // Replace with actual URLs
+      const url2 = 'https://anotherexample.com'; // Replace with actual URLs
+
+      const content1 = await fetchWebsiteContent(url1);
+      const content2 = await fetchWebsiteContent(url2);
+
+      const website1Div = document.getElementById('website1');
+      const website2Div = document.getElementById('website2');
+
+      const highlightedContent1 = highlightDifferences(content1, content2);
+      const highlightedContent2 = highlightDifferences(content2, content1);
+
+      website1Div.innerHTML = `<h2>Website 1 Content:</h2>${highlightedContent1}`;
+      website2Div.innerHTML = `<h2>Website 2 Content:</h2>${highlightedContent2}`;
+    }
+
+    compareWebsites();
+  </script>
+</body>
+</html>
